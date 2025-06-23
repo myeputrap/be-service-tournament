@@ -12,8 +12,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func MiddlewareJWTAuthorizationUser(c *fiber.Ctx) error {
-	slog.Info("[Validator][MiddlewareJWTAuthorization] Authorizing user/device")
+func MiddlewareJWTAuthorizationAdmin(c *fiber.Ctx) error {
+	slog.Info("[Validator][MiddlewareJWTAuthorization] Authorizing admin")
 	user := c.Locals("user").(*jwt.Token)
 	claims, ok := user.Claims.(jwt.MapClaims)
 	if !ok {
@@ -36,7 +36,7 @@ func MiddlewareJWTAuthorizationUser(c *fiber.Ctx) error {
 
 	}
 	loginType := claims["type"].(string)
-	if loginType != "user" {
+	if loginType != "admin" {
 		err = domain.ErrUnauthorized
 		slog.Info("[Validator][MiddlewareJWTAuthorization] token expired", "Err", err.Error())
 		response := helper.NewResponse(domain.StatusUnauthorized, err.Error(), nil, nil)
@@ -49,7 +49,7 @@ func MiddlewareJWTAuthorizationUser(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func MiddlewareJWTAuthorizationDevice(c *fiber.Ctx) error {
+func MiddlewareJWTAuthorizationUser(c *fiber.Ctx) error {
 	slog.Info("[Validator][MiddlewareJWTAuthorization] Authorizing user/user")
 	user := c.Locals("user").(*jwt.Token)
 	claims, ok := user.Claims.(jwt.MapClaims)

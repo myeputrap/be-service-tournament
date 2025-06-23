@@ -15,16 +15,19 @@ import (
 func RouterAPI(app *fiber.App, us domain.TournamentUsecase) {
 	requestValidator := validator.New()
 	basePath := viper.GetString("server.http.base_path")
+
+	handler := &tournamentHandler{us, requestValidator}
+	authMiddleware := authorization.New(authorization.Config{Usecase: us})
 	api := app.Group(basePath)
 	adm := app.Group("/adm")
 	user := app.Group("/user")
-	handler := &tournamentHandler{us, requestValidator}
-	authMiddleware := authorization.New(authorization.Config{Usecase: us})
-	adm.Use(jwtware.New(JWTMiddlewareConfiguration()), MiddlewareJWTAuthorizationUser)
-	user.Use(jwtware.New(JWTMiddlewareConfiguration()), MiddlewareJWTAuthorizationDevice)
-	api.Get("/tourney", authMiddleware, handler.TestUser)
+	adm.Post("/login", handler.Login)
+	api.Get("/tourney", handler.InquiryTourneyPublic)
+
+	adm.Use(jwtware.New(JWTMiddlewareConfiguration()), MiddlewareJWTAuthorizationAdmin)
+	user.Use(jwtware.New(JWTMiddlewareConfiguration()), MiddlewareJWTAuthorizationUser)
 	adm.Get("/test-admin", authMiddleware, handler.TestAdmin)
-	user.Get("/test-user", authMiddleware, handler.TestUser)
+	//user.Get("/test-user", authMiddleware, handler.TestUser)
 }
 
 func JWTMiddlewareConfiguration() jwtware.Config {

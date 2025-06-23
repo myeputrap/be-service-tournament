@@ -17,7 +17,7 @@ type TourneyUsecase struct {
 	mysqlRepository domain.SQLTournamentRepository
 }
 
-func NewTourneyUsecase(mysqlRepo domain.SQLTournamentRepository) domain.TournamentUsecase {
+func NewTournamentUsecase(mysqlRepo domain.SQLTournamentRepository) domain.TournamentUsecase {
 	return &TourneyUsecase{
 		mysqlRepository: mysqlRepo,
 	}
@@ -79,5 +79,37 @@ func (u *TourneyUsecase) Login(ctx context.Context, req domain.RequestLogin) (r 
 	// 	return
 	// }
 	status = domain.StatusSuccessLogin
+	return
+}
+
+func (u *TourneyUsecase) InquiryTourneyPublic(ctx context.Context) (response []domain.InquiryTourneyPublicResponse, status int, err error) {
+	slog.Info("[Usecase][InquiryTourneyPublic] InquiryTourneyPublic")
+	var countParticipant int64
+	tourneys, status, err := u.mysqlRepository.GetTournament(ctx)
+	if err != nil {
+		slog.Error("[Usecase][InquiryTourneyPublic] " + err.Error())
+		status = domain.StatusNotFound
+		return
+	}
+	response = make([]domain.InquiryTourneyPublicResponse, len(tourneys))
+	for i, v := range tourneys {
+		countParticipant, status, err = u.mysqlRepository.CountParticipantTournament(ctx, int32(v.ID))
+		if err != nil {
+			slog.Error("[Usecase][InquiryTourneyPublic] " + err.Error())
+			status = domain.StatusNotFound
+			return
+		}
+		response[i] = domain.InquiryTourneyPublicResponse{
+			Name:          v.Name,
+			StartDate:     v.StartDate.Format("2 Jan 2006, 15.04"),
+			EndDate:       v.EndDate.Format("2 Jan 2006, 15.04"),
+			Location:      v.Location,
+			Format:        v.Format,
+			Biaya:         v.Fee,
+			Kuota:         v.Quota,
+			Penyelenggara: "",
+			FilledQuota:   int(countParticipant),
+		}
+	}
 	return
 }

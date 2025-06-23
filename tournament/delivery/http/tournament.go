@@ -67,7 +67,23 @@ func (h *tournamentHandler) TestAdmin(c *fiber.Ctx) error {
 	return c.Status(domain.GetHttpStatusCode(domain.StatusSuccess)).JSON(response)
 }
 
-func (h *tournamentHandler) TestUser(c *fiber.Ctx) error {
-	response := helper.NewResponse(domain.StatusSuccess, "OK", nil, nil)
-	return c.Status(domain.GetHttpStatusCode(domain.StatusSuccess)).JSON(response)
+func (h *tournamentHandler) InquiryTourneyPublic(c *fiber.Ctx) error {
+	var status int
+	var message string
+	r, status, err := h.hospitalityusecase.InquiryTourneyPublic(c.Context())
+	if err != nil {
+		slog.Error("[Handler][InquiryTourneyPublic] Error InquiryTourneyPublic", "Err", err.Error())
+		switch status {
+		case domain.StatusNotFound:
+			status = domain.StatusNotFound
+			message = domain.GetCustomStatusMessage(status, "")
+		default:
+			status = domain.StatusInternalServerError
+			message = domain.GetCustomStatusMessage(status, "")
+		}
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
+	}
+	status = domain.StatusSuccess
+	response := helper.NewResponse(status, "OK", nil, r)
+	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
 }

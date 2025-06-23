@@ -11,6 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	_DeliveryHTTP "be-service-tournament/tournament/delivery/http"
+	_RepoMySQL "be-service-tournament/tournament/repository/mysql"
+	_Usecase "be-service-tournament/tournament/usecase"
+
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -69,10 +73,11 @@ func main() {
 		viper.GetString("postgres.user"),
 		viper.GetString("postgres.password"),
 		viper.GetString("postgres.database"),
-		viper.GetString("postgres.port"),
+		5432,
 		viper.GetString("postgres.schema"), // e.g., "web"
 	)
-
+	fmt.Println("==============================================================")
+	fmt.Println(dsn)
 	// Set up logger
 	gormLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -115,7 +120,6 @@ func main() {
 		}
 	}()
 
-	// Initialize HTTP web framework
 	app := fiber.New(fiber.Config{
 		Prefork:       viper.GetBool("server.http.prefork"),
 		StrictRouting: viper.GetBool("server.http.strict_routing"),
@@ -161,7 +165,11 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World")
 	})
-
+	//register uc and repository
+	mysqlRepo := _RepoMySQL.NewSQLTournamentRepository(db)
+	tourneyUsecase := _Usecase.NewTournamentUsecase(mysqlRepo)
+	_DeliveryHTTP.RouterAPI(app, tourneyUsecase)
+	// Initialize HTTP web framework
 	log.Println("HTTP server is running...")
 	go func() {
 		if err := app.Listen(":" + viper.GetString("server.http.port")); err != nil {

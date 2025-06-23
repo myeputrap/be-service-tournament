@@ -78,11 +78,12 @@ type Tournament struct {
 	Format            string    `json:"format" gorm:"column:format"`
 	GenderEligibility string    `json:"gender_eligibility" gorm:"column:gender_eligibility"`
 	LevelMode         string    `json:"level_mode" gorm:"column:level_mode"`
+	Quota             int       `json:"quota" gorm:"column:quota"`
 	CreatedAt         time.Time `json:"created_at" gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt         time.Time `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
 }
 
-func (Tournament) TableName() string { return "tournaments" }
+func (Tournament) TableName() string { return "web.tournaments" }
 
 type Participant struct {
 	ID           int64     `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
@@ -96,7 +97,7 @@ type Participant struct {
 	UpdatedAt    time.Time `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
 }
 
-func (Participant) TableName() string { return "participants" }
+func (Participant) TableName() string { return "web.participants" }
 
 type Phase struct {
 	ID            int64     `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
