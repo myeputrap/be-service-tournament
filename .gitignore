@@ -1,0 +1,9 @@
+.idea
+.vscode
+.DS_Store
+*.exe
+*.yml
+config.yaml
+config.prod.yaml
+*.conf
+hospitality-service
