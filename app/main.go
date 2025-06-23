@@ -68,13 +68,13 @@ func main() {
 	}
 
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Bangkok search_path=%s",
+		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Bangkok search_path=%s",
 		viper.GetString("postgres.host"),
 		viper.GetString("postgres.user"),
 		viper.GetString("postgres.password"),
 		viper.GetString("postgres.database"),
-		5432,
-		viper.GetString("postgres.schema"), // e.g., "web"
+		viper.GetInt("postgres.port"),
+		viper.GetString("postgres.schema"),
 	)
 	fmt.Println("==============================================================")
 	fmt.Println(dsn)
