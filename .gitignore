@@ -7,3 +7,5 @@ config.yaml
 config.prod.yaml
 *.conf
 hospitality-service
+/config.yaml           # Ignore only root-level config.yaml
+/app/config.yaml 
