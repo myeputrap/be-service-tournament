@@ -5,9 +5,11 @@ import (
 	"be-service-tournament/helper"
 	"log/slog"
 	"net/mail"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/spf13/viper"
 )
 
 var genderEligibility = []string{
@@ -131,9 +133,52 @@ func (h *tournamentHandler) CreateTournament(c *fiber.Ctx) error {
 	req.CreatedBy = int64(userData.ID)
 	r, status, err := h.hospitalityusecase.CreateTournament(c.Context(), req)
 	if err != nil {
-		slog.Error("[Handler][Login] Error CreateUser", "Err", err.Error())
+		slog.Error("[Handler][Login] Error CreateTournament", "Err", err.Error())
 		if status == domain.StatusInternalServerError {
-			message = "something wrong, can't CreateUser"
+			message = "something wrong, can't CreateTournament"
+		} else {
+			message = domain.GetCustomStatusMessage(status, "")
+		}
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
+	}
+	status = domain.StatusSuccessCreate
+	response := helper.NewResponse(status, "OK", nil, r)
+	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
+}
+
+func (h *tournamentHandler) GetAllTournament(c *fiber.Ctx) error {
+	var err error
+	var req domain.GetAllTournamentRequest
+	if err := c.QueryParser(&req); err != nil {
+		status := domain.StatusBadRequest
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, err.Error(), nil, nil))
+	}
+	if err := h.validator.Struct(req); err != nil {
+		slog.Error("[Handler][LogGetAllTournamentin]", "Err", err)
+		status = domain.StatusMissingParameter
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Bad Request", nil, nil))
+	}
+	//checkValue
+	req.Limit, err = strconv.ParseInt(c.Query("limit", strconv.FormatInt(int64(viper.GetInt("default_limit_query")), 10)), 10, 64)
+	if err != nil {
+		return c.Status(status).JSON(helper.NewResponse(status, err.Error(), nil, nil))
+	}
+
+	req.Page, err = strconv.ParseInt(c.Query("page", "1"), 10, 64)
+	if err != nil {
+		return c.Status(status).JSON(helper.NewResponse(status, err.Error(), nil, nil))
+	}
+	if req.Sort == "" {
+		req.Sort = "id"
+	}
+	if req.Order == "" {
+		req.Order = "asc"
+	}
+	r, status, err := h.hospitalityusecase.GetAllTournament(c.Context(), req)
+	if err != nil {
+		slog.Error("[Handler][Login] Error GetAllTournament", "Err", err.Error())
+		if status == domain.StatusInternalServerError {
+			message = "something wrong, can't GetAllTournament"
 		} else {
 			message = domain.GetCustomStatusMessage(status, "")
 		}

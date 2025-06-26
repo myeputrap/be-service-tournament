@@ -34,6 +34,7 @@ func RouterAPI(app *fiber.App, us domain.TournamentUsecase) {
 	user.Get("/list-user-partner", authMiddleware, handler.ListUserPartner)
 	user.Post("/user-participant", authMiddleware, handler.CreateUserParticipant)
 	adm.Patch("/participant/:id/status", authMiddleware, handler.UpdateParticipant)
+	adm.Get("/tournament", authMiddleware, handler.GetAllTournament)
 }
 
 func JWTMiddlewareConfiguration() jwtware.Config {

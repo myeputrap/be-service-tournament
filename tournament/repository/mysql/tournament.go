@@ -140,3 +140,27 @@ func (t *tourneyMySQLRepository) GetTournamentByParam(ctx context.Context, param
 	}
 	return &ttB, domain.StatusSuccess, nil
 }
+
+func (t *tourneyMySQLRepository) GetAllTournament(ctx context.Context, req domain.GetAllTournamentRequest) (res []domain.Tournament, count int64, status int, err error) {
+	db := t.Conn.WithContext(ctx).Model(&domain.Tournament{}).Order(fmt.Sprintf("%s %s", req.Sort, req.Order)).Limit(int(req.Limit)).Offset(int(req.Offset))
+	err = db.Count(&count).Error
+	if err != nil {
+		slog.Error("[Repository][GetAllTournament] err", "", err.Error())
+		status = domain.StatusInternalServerError
+		return
+	}
+	result := db.Find(&res)
+	if result.Error != nil {
+		slog.Error("[Repository][GetAllTournament] err", "", result.Error)
+		status = domain.StatusInternalServerError
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		status = domain.StatusNotFound
+		err = domain.ErrNotFound
+		slog.Error("[Repository][GetAllTournament] GetAllTournament not found", "Err", err.Error())
+		return
+	}
+	return
+}

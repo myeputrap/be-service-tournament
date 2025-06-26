@@ -119,8 +119,29 @@ func (h *TourneyUsecase) CreateTournament(ctx context.Context, req domain.Tourna
 	res, status, err = h.mysqlRepository.CreateTournament(ctx, req)
 	if err != nil {
 		slog.Error("[Usecase][InquiryTourneyPublic] " + err.Error())
-		status = domain.StatusInternalServerError
 		return
 	}
 	return
+}
+
+func (h *TourneyUsecase) GetAllTournament(ctx context.Context, req domain.GetAllTournamentRequest) (res domain.GetAllTournamentResponse, status int, err error) {
+	slog.Info("[Usecase][GetAllTournament] GetAllTournament")
+	req.Offset = (req.Page - 1) * req.Limit
+	out, count, status, err := h.mysqlRepository.GetAllTournament(ctx, req)
+	if err != nil {
+		slog.Error("[Usecase][GetAllTournament] " + err.Error())
+		return
+	}
+
+	res.Metadata = domain.MetaData{
+		TotalData: uint(count),
+		TotalPage: (uint(count) + uint(req.Limit) - 1) / uint(req.Limit),
+		Page:      uint(req.Page),
+		Limit:     uint(req.Limit),
+		Sort:      req.Sort,
+		Order:     req.Order,
+	}
+	res.Data = out
+
+	return res, domain.StatusSuccess, nil
 }
