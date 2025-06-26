@@ -153,12 +153,12 @@ func (h *TourneyUsecase) CreateAdmin(ctx context.Context, req domain.UserRequest
 
 func (h *TourneyUsecase) GetUserPartner(ctx context.Context, req domain.GetAllUserRequestPartner) (res domain.GetUserPartnerResponseDTO, status int, err error) {
 	slog.Info("[Usecase][GetUserPartner] GetUserPartner")
-	user, count, status, err := h.mysqlRepository.GetUserPartner(ctx, req)
+	user, _, status, err := h.mysqlRepository.GetUserPartner(ctx, req)
 	if err != nil {
 		slog.Error("[Usecase][Login]" + err.Error())
 		return
 	}
-	res.Count = count
+	res.Count = len(user)
 	res.Data = make([]domain.UserPartnerDTO, len(user))
 	for i, v := range user {
 		res.Data[i] = domain.UserPartnerDTO{

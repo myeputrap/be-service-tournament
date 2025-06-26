@@ -57,6 +57,7 @@ func (h *TourneyUsecase) FormPartnershipParticipant(ctx context.Context, req dom
 		return
 	}
 	//TODO check if tourney is valid?
+	//TODO check if partner is the same as gender eligible tournament. For example double male cannot be in mixed tournament
 	status, err = h.mysqlRepository.CreateParticipant(ctx, domain.Participant{TournamentID: req.TournamentID, UserAID: req.PlayerOne, UserBID: req.PlayerTwo, State: "Applied"})
 	if err != nil {
 		slog.Error("[Usecase][FormPartnershipParticipant] " + err.Error())
