@@ -10,6 +10,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+var genderEligibility = []string{
+	"Male only",
+	"Female only",
+	"Mixed",
+	"Free",
+}
+
+var typeTournament = []string{
+	"Elimination",
+	"GroupElimination&Group",
+}
+var status int
+var message string
+
 type tournamentHandler struct {
 	hospitalityusecase domain.TournamentUsecase
 	validator          *validator.Validate
@@ -20,8 +34,7 @@ func NewHandler(u domain.TournamentUsecase, validator *validator.Validate) *tour
 }
 
 func (h *tournamentHandler) Login(c *fiber.Ctx) error {
-	var status int
-	var message string
+	slog.Info("[Handler][Login] Login")
 	var req domain.RequestLogin
 	if err := c.BodyParser(&req); err != nil {
 		err = domain.ErrBadRequest
@@ -29,11 +42,10 @@ func (h *tournamentHandler) Login(c *fiber.Ctx) error {
 		status = domain.StatusInternalServerError
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, err.Error(), nil, nil))
 	}
-	if req.Email == "" || req.Password == "" {
+	if err := h.validator.Struct(req); err != nil {
+		slog.Error("[Handler][Login]", "Err", err)
 		status = domain.StatusMissingParameter
-		message = domain.GetCustomStatusMessage(status, "email/password")
-		slog.Error("[Handler][Login] " + message)
-		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Bad Request", nil, nil))
 	}
 	_, err := mail.ParseAddress(req.Email)
 	if err != nil {
@@ -68,6 +80,7 @@ func (h *tournamentHandler) TestAdmin(c *fiber.Ctx) error {
 }
 
 func (h *tournamentHandler) InquiryTourneyPublic(c *fiber.Ctx) error {
+	slog.Info("[Handler][InquiryTourneyPublic] InquiryTourneyPublic")
 	var status int
 	var message string
 	r, status, err := h.hospitalityusecase.InquiryTourneyPublic(c.Context())
@@ -84,6 +97,52 @@ func (h *tournamentHandler) InquiryTourneyPublic(c *fiber.Ctx) error {
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
 	}
 	status = domain.StatusSuccess
+	response := helper.NewResponse(status, "OK", nil, r)
+	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
+}
+
+func (h *tournamentHandler) CreateTournament(c *fiber.Ctx) error {
+	slog.Info("[Handler][CreateTournament] CreateTournament")
+	var req domain.Tournament
+	if err := c.BodyParser(&req); err != nil {
+		status := domain.StatusBadRequest
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, err.Error(), nil, nil))
+	}
+	if err := h.validator.Struct(req); err != nil {
+		slog.Error("[Handler][Login]", "Err", err)
+		status = domain.StatusMissingParameter
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Bad Request", nil, nil))
+	}
+	//check value
+	if helper.ContainsAnySingle(req.GenderEligibility, genderEligibility) {
+		status = domain.StatusMissingParameter
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Value of gender GenderEligibility is not recognized", nil, nil))
+	}
+	if helper.ContainsAnySingle(req.Type, typeTournament) {
+		status = domain.StatusMissingParameter
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Value of gender TournamentType is not recognized", nil, nil))
+	}
+
+	if req.Type == "Elimination" && (req.Quota != 16 && req.Quota != 32 && req.Quota != 64) {
+		status = domain.StatusBadRequest
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Value of quota is not recognized", nil, nil))
+	}
+
+	if req.Type == "GroupElimination&Group" && (req.Quota != 32 && req.Quota != 64) {
+		status = domain.StatusBadRequest
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Value of quota is not recognized", nil, nil))
+	}
+	r, status, err := h.hospitalityusecase.CrateTournament(c.Context(), req)
+	if err != nil {
+		slog.Error("[Handler][Login] Error CreateUser", "Err", err.Error())
+		if status == domain.StatusInternalServerError {
+			message = "something wrong, can't CreateUser"
+		} else {
+			message = domain.GetCustomStatusMessage(status, "")
+		}
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
+	}
+	status = domain.StatusSuccessCreate
 	response := helper.NewResponse(status, "OK", nil, r)
 	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
 }

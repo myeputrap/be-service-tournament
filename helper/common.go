@@ -39,6 +39,15 @@ func ContainsAny(tags []string, targets []string) bool {
 	return false
 }
 
+func ContainsAnySingle(tag string, targets []string) bool {
+	for _, target := range targets {
+		if tag == target {
+			return true
+		}
+	}
+	return false
+}
+
 func CreateLanguageImageUrl(languageCode string) string {
 	return fmt.Sprintf("%s/%s/%s/%s.svg", viper.GetString("server.http.base_url"), "images", "languages", languageCode)
 }
@@ -265,4 +274,31 @@ func GetFileName(url string) string {
 		return parts[1]
 	}
 	return "" // or handle the error if needed
+}
+
+func IsContainNumber(s string) bool {
+	for _, c := range s {
+		if c >= '0' && c <= '9' {
+			return true
+		}
+	}
+	return false
+}
+
+func IsContainCapital(s string) bool {
+	for _, c := range s {
+		if c >= 'A' && c <= 'Z' {
+			return true
+		}
+	}
+	return false
+}
+
+func IsContainSpecialCharacter(s string) bool {
+	for _, c := range s {
+		if (c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') {
+			return true
+		}
+	}
+	return false
 }

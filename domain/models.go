@@ -6,21 +6,22 @@ import (
 
 // --- User Related ---
 type User struct {
-	ID             int64     `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
-	Email          string    `json:"email" gorm:"column:email;unique;not null"`
-	Username       string    `json:"username" gorm:"column:username;unique;not null"`
-	HashedPassword string    `json:"hashed_password" gorm:"column:hashed_password;not null"`
-	PhoneNumber    string    `json:"phone_number" gorm:"column:phone_number"`
-	FullName       string    `json:"full_name" gorm:"column:full_name"`
-	Gender         string    `json:"gender" gorm:"column:gender"`
-	PhotoProfile   string    `json:"photo_profile" gorm:"column:photo_profile"`
-	BirthDate      time.Time `json:"birth_date" gorm:"column:birth_date"`
-	City           string    `json:"city" gorm:"column:city"`
-	Nik            string    `json:"nik" gorm:"column:nik"`
-	TierID         int64     `json:"tier_id" gorm:"column:tier_id"`
-	RoleID         int64     `json:"role_id" gorm:"column:role_id"`
-	CreatedAt      time.Time `json:"created_at" gorm:"column:created_at;autoCreateTime"`
-	UpdatedAt      time.Time `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
+	ID             int64      `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
+	Email          string     `json:"email" gorm:"column:email;unique;not null"`
+	Username       string     `json:"username" gorm:"column:username;unique;not null"`
+	HashedPassword string     `json:"hashed_password" gorm:"column:hashed_password;not null"`
+	PhoneNumber    string     `json:"phone_number" gorm:"column:phone_number"`
+	FullName       string     `json:"full_name" gorm:"column:full_name"`
+	Gender         string     `json:"gender" gorm:"column:gender"`
+	PhotoProfile   *string    `json:"photo_profile" gorm:"column:photo_profile"`
+	BirthDate      *time.Time `json:"birth_date" gorm:"column:birth_date"`
+	City           *string    `json:"city" gorm:"column:city"`
+	Nik            *string    `json:"nik" gorm:"column:nik"`
+	TierID         *int64     `json:"tier_id" gorm:"column:tier_id"`
+	RoleID         int64      `json:"role_id" gorm:"column:role_id"`
+	ReferalCode    *string    `json:"referal_code" gorm:"column:referal_code"`
+	CreatedAt      time.Time  `json:"created_at" gorm:"column:created_at;autoCreateTime"`
+	//UpdatedAt      time.Time  `json:"updated_at" gorm:"column:updated_at"`
 }
 
 func (User) TableName() string { return "web.users" }
@@ -67,18 +68,19 @@ func (PointsLog) TableName() string { return "points_log" }
 
 type Tournament struct {
 	ID                int64     `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
-	Name              string    `json:"name" gorm:"column:name"`
+	Name              string    `json:"name" gorm:"column:name" validate:"required"`
 	Description       string    `json:"description" gorm:"column:description"`
-	Type              string    `json:"type" gorm:"column:type"`
-	Location          string    `json:"location" gorm:"column:location"`
-	Fee               float64   `json:"fee" gorm:"column:fee"`
-	FeeInfo           string    `json:"fee_info" gorm:"column:fee_info"`
-	StartDate         time.Time `json:"start_date" gorm:"column:start_date"`
-	EndDate           time.Time `json:"end_date" gorm:"column:end_date"`
-	Format            string    `json:"format" gorm:"column:format"`
-	GenderEligibility string    `json:"gender_eligibility" gorm:"column:gender_eligibility"`
-	LevelMode         string    `json:"level_mode" gorm:"column:level_mode"`
-	Quota             int       `json:"quota" gorm:"column:quota"`
+	Type              string    `json:"type" gorm:"column:type" validate:"required"`
+	Location          string    `json:"location" gorm:"column:location" validate:"required"`
+	Fee               float64   `json:"fee" gorm:"column:fee" validate:"required"`
+	Latitude          float64   `json:"latitude" gorm:"column:latitude"`
+	Longitude         float64   `json:"longitude" gorm:"column:longitude"`
+	FeeInfo           string    `json:"fee_info" gorm:"column:fee_info" validate:"required"`
+	StartDate         time.Time `json:"start_date" gorm:"column:start_date" validate:"required"`
+	EndDate           time.Time `json:"end_date" gorm:"column:end_date" validate:"required"`
+	GenderEligibility string    `json:"gender_eligibility" gorm:"column:gender_eligibility" validate:"required"`
+	Quota             int       `json:"quota" gorm:"column:quota" validate:"required"`
+	Organizer         string    `json:"organizer" gorm:"column:organizer" validate:"required"`
 	CreatedAt         time.Time `json:"created_at" gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt         time.Time `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
 }
@@ -91,8 +93,7 @@ type Participant struct {
 	UserAID      int64     `json:"user_a_id" gorm:"column:user_a_id"`
 	UserBID      int64     `json:"user_b_id" gorm:"column:user_b_id"`
 	State        string    `json:"state" gorm:"column:state"`
-	UniqueCode   string    `json:"unique_code" gorm:"column:unique_code"`
-	PaymentProof string    `json:"payment_proof" gorm:"column:payment_proof"`
+	PaymentProof *string   `json:"payment_proof" gorm:"column:payment_proof"`
 	CreatedAt    time.Time `json:"created_at" gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt    time.Time `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
 }

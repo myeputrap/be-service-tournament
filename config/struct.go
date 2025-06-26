@@ -176,7 +176,7 @@ var defaultConfig = &Config{
 	},
 	PostgreSQL: PostgreSQL{
 		Host:               "localhost",
-		Port:               "1542",
+		Port:               "15432",
 		Database:           "tourney_system",
 		User:               "root",
 		Password:           "yourpassword",

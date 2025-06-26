@@ -4,7 +4,9 @@ import (
 	"be-service-tournament/domain"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -17,6 +19,13 @@ func NewSQLTournamentRepository(dbConn *gorm.DB) domain.SQLTournamentRepository 
 	return &tourneyMySQLRepository{
 		Conn: dbConn,
 	}
+}
+func (t *tourneyMySQLRepository) BeginTransaction(ctx context.Context) (*gorm.DB, error) {
+	tx := t.Conn.WithContext(ctx).Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return tx, nil
 }
 
 func (t *tourneyMySQLRepository) GetUserLogin(ctx context.Context, req domain.RequestLogin) (user domain.User, status int, err error) {
@@ -74,4 +83,60 @@ func (t *tourneyMySQLRepository) CountParticipantTournament(ctx context.Context,
 	}
 
 	return
+}
+
+func (t *tourneyMySQLRepository) DeleteTableBasedOnParameter(ctx context.Context, table string, param string, id int64, tx *gorm.DB) (status int, err error) {
+	slog.Info("[Repository][DeleteTableBasedOnParameter] DeleteTableBasedOnParameter")
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", table, param)
+	slog.Debug("[Repository][DeleteTableBasedOnParameter] Query", ":", query+"_"+table+"_"+param+"_"+strconv.FormatInt(id, 10))
+
+	result := tx.WithContext(ctx).Exec(query, id)
+	if result.Error != nil {
+		slog.Error("[Repository][DeleteTableBasedOnParameter] Exec error", "", result.Error)
+		return domain.StatusInternalServerError, result.Error
+	}
+
+	affected := result.RowsAffected
+	if affected == 0 {
+		err = errors.New("not found")
+		slog.Error("[Repository][DeleteTableBasedOnParameter] err", "", err)
+		return domain.StatusNotFound, err
+	}
+
+	return domain.StatusSuccess, nil
+}
+
+func (t *tourneyMySQLRepository) CreateTournament(ctx context.Context, req domain.Tournament) (res domain.Tournament, status int, err error) {
+	slog.Info("[Repository][CreateTournament] CreateTournament")
+	result := t.Conn.WithContext(ctx).Create(&req)
+	err = result.Error
+	if err != nil {
+		slog.Error("[Repository][CreateUser] err", "", err)
+		status = domain.StatusInternalServerError
+		return
+	}
+	res = req
+	status = domain.StatusSuccessCreate
+	return
+}
+
+func (t *tourneyMySQLRepository) GetTournamentByParam(ctx context.Context, param map[string]string) (res *domain.Tournament, status int, err error) {
+	slog.Info("[Repository][GetTournamentByParam] GetTournamentByParam")
+	var ttB domain.Tournament
+	query := t.Conn.WithContext(ctx)
+
+	for column, value := range param {
+		query = query.Where(column+" = ?", value)
+	}
+
+	err = query.First(&ttB).Error
+	if err != nil {
+		slog.Error("[Repository][GetTournamentByParam] err", "", err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domain.StatusNotFound, domain.ErrNotFound
+		}
+		status = domain.StatusInternalServerError
+		return
+	}
+	return &ttB, domain.StatusSuccess, nil
 }
