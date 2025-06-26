@@ -40,6 +40,7 @@ type ErrorResponseMsg struct {
 }
 
 type UserPartnerDTO struct {
+	ID           int64   `json:"id"`
 	Email        string  `json:"email"`
 	Username     string  `json:"username"`
 	PhoneNumber  string  `json:"phone_number"`
@@ -56,16 +57,29 @@ type GetAllUserRequestPartner struct {
 	UIDSearcher int64
 }
 type GetUserPartnerResponseDTO struct {
-	Count int              `json:"meta"`
+	Count int              `json:"count"`
 	Data  []UserPartnerDTO `json:"data"`
 }
+type ParticipantDTO struct {
+	TournamentID int64  `json:"tournament_id" validate:"required"`
+	PlayerOne    int64  `json:"player_one" validate:"required"`
+	PlayerTwo    int64  `json:"player_two" validate:"required"`
+	ReferalCode  string `json:"referal_code" validate:"required"`
+}
 
+type UpdateParticipantRequest struct {
+	UserID int64  `json:"user_id" validate:"required"`
+	Status string `json:"status" validate:"required"`
+}
 type TournamentUsecase interface {
 	Login(ctx context.Context, req RequestLogin) (r map[string]interface{}, status int, err error)
 	InquiryTourneyPublic(ctx context.Context) (response []InquiryTourneyPublicResponse, status int, err error)
 	CreateUser(ctx context.Context, req UserRequestDTO) (res *User, multiErr *MultipleErrorResponse, status int, err error)
 	GetUserPartner(ctx context.Context, req GetAllUserRequestPartner) (res GetUserPartnerResponseDTO, status int, err error)
-	CrateTournament(ctx context.Context, req Tournament) (res Tournament, status int, err error)
+	CreateTournament(ctx context.Context, req Tournament) (res Tournament, status int, err error)
+	FormPartnershipParticipant(ctx context.Context, req ParticipantDTO) (status int, err error)
+	CreateAdmin(ctx context.Context, req UserRequestDTO) (res *User, multiErr *MultipleErrorResponse, status int, err error)
+	UpdateParticipant(ctx context.Context, req UpdateParticipantRequest) (status int, err error)
 }
 
 type SQLTournamentRepository interface {
@@ -81,4 +95,6 @@ type SQLTournamentRepository interface {
 	GetTournamentByParam(ctx context.Context, param map[string]string) (res *Tournament, status int, err error)
 	GetParticipantByParam(ctx context.Context, param map[string]string) (res *Participant, status int, err error)
 	UpdateParticipant(ctx context.Context, params map[string]string, id int64) (status int, err error)
+	IsPlayerExistOnParticipant(ctx context.Context, tourneyID int64, userID int64) (isExist bool, status int, err error)
+	CreateParticipant(ctx context.Context, req Participant) (status int, err error)
 }

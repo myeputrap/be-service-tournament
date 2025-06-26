@@ -19,7 +19,7 @@ var genderEligibility = []string{
 
 var typeTournament = []string{
 	"Elimination",
-	"GroupElimination&Group",
+	"Elimination&Group",
 }
 var status int
 var message string
@@ -36,6 +36,7 @@ func NewHandler(u domain.TournamentUsecase, validator *validator.Validate) *tour
 func (h *tournamentHandler) Login(c *fiber.Ctx) error {
 	slog.Info("[Handler][Login] Login")
 	var req domain.RequestLogin
+	var message string
 	if err := c.BodyParser(&req); err != nil {
 		err = domain.ErrBadRequest
 		slog.Error("[Handler][Login] Error login", "Err", err.Error())
@@ -57,15 +58,9 @@ func (h *tournamentHandler) Login(c *fiber.Ctx) error {
 	r, status, err := h.hospitalityusecase.Login(c.Context(), req)
 	if err != nil {
 		slog.Error("[Handler][Login] Error login", "Err", err.Error())
-		switch status {
-		case domain.StatusNotFound:
-			status = domain.StatusInvalidEmailPassword
-			message = domain.GetCustomStatusMessage(status, "")
-		case domain.StatusUnauthorizedUnverified:
-			status = domain.StatusUnauthorizedUnverified
-			message = domain.GetCustomStatusMessage(status, "")
-		case domain.StatusUnauthorizedBlockedAccount:
-			status = domain.StatusUnauthorizedBlockedAccount
+		if status == domain.StatusInternalServerError {
+			message = "something wrong with login"
+		} else {
 			message = domain.GetCustomStatusMessage(status, "")
 		}
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
@@ -114,25 +109,27 @@ func (h *tournamentHandler) CreateTournament(c *fiber.Ctx) error {
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Bad Request", nil, nil))
 	}
 	//check value
-	if helper.ContainsAnySingle(req.GenderEligibility, genderEligibility) {
+	if !helper.ContainsAnySingle(req.GenderEligibility, genderEligibility) {
 		status = domain.StatusMissingParameter
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Value of gender GenderEligibility is not recognized", nil, nil))
 	}
-	if helper.ContainsAnySingle(req.Type, typeTournament) {
+	if !helper.ContainsAnySingle(req.Type, typeTournament) {
 		status = domain.StatusMissingParameter
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Value of gender TournamentType is not recognized", nil, nil))
 	}
 
-	if req.Type == "Elimination" && (req.Quota != 16 && req.Quota != 32 && req.Quota != 64) {
+	if req.Type == "Elimination" || (req.Quota != 16 && req.Quota != 32 && req.Quota != 64) {
 		status = domain.StatusBadRequest
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Value of quota is not recognized", nil, nil))
 	}
 
-	if req.Type == "GroupElimination&Group" && (req.Quota != 32 && req.Quota != 64) {
+	if req.Type == "GroupElimination&Group" || (req.Quota != 32 && req.Quota != 64) {
 		status = domain.StatusBadRequest
-		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Value of quota is not recognized", nil, nil))
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Value of quota is not recognized for tournament type", nil, nil))
 	}
-	r, status, err := h.hospitalityusecase.CrateTournament(c.Context(), req)
+	userData := helper.GetUserLogin(c.Context())
+	req.CreatedBy = int64(userData.ID)
+	r, status, err := h.hospitalityusecase.CreateTournament(c.Context(), req)
 	if err != nil {
 		slog.Error("[Handler][Login] Error CreateUser", "Err", err.Error())
 		if status == domain.StatusInternalServerError {

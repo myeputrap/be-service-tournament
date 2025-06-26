@@ -9,7 +9,7 @@ type AuthRequest struct {
 type UserRequestDTO struct {
 	Email           string `json:"email" validate:"required"`
 	Username        string `json:"username" validate:"required"`
-	Password        string `json:"password" `
+	Password        string `json:"password" validate:"required"`
 	ConfirmPassword string `json:"confirm_password" validate:"required"`
 	PhoneNumber     string `json:"phone_number" validate:"required"`
 	FullName        string `json:"full_name" validate:"required"`

@@ -35,7 +35,8 @@ func (h *TourneyUsecase) Login(ctx context.Context, req domain.RequestLogin) (r 
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.Password))
 	if err != nil {
 		slog.Error("[Usecase][Login] Wrong username/password")
-		status = domain.StatusNotFound
+		status = domain.StatusInvalidEmailPassword
+		err = domain.ErrBadRequest
 		return
 	}
 	slog.Debug("[Usecase][Login] Bcrypt compare hash and password success")
@@ -113,12 +114,12 @@ func (h *TourneyUsecase) InquiryTourneyPublic(ctx context.Context) (response []d
 	return
 }
 
-func (h *TourneyUsecase) CrateTournament(ctx context.Context, req domain.Tournament) (res domain.Tournament, status int, err error) {
-	slog.Info("[Usecase][CrateTournament] CrateTournament")
+func (h *TourneyUsecase) CreateTournament(ctx context.Context, req domain.Tournament) (res domain.Tournament, status int, err error) {
+	slog.Info("[Usecase][CreateTournament] CreateTournament")
 	res, status, err = h.mysqlRepository.CreateTournament(ctx, req)
 	if err != nil {
 		slog.Error("[Usecase][InquiryTourneyPublic] " + err.Error())
-		status = domain.StatusNotFound
+		status = domain.StatusInternalServerError
 		return
 	}
 	return

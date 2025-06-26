@@ -81,7 +81,7 @@ func (h *tournamentHandler) CreateAdmin(c *fiber.Ctx) error {
 		status = domain.StatusMissingParameter
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Bad Request", nil, nil))
 	}
-	r, multiErr, status, err := h.hospitalityusecase.CreateUser(c.Context(), req)
+	r, multiErr, status, err := h.hospitalityusecase.CreateAdmin(c.Context(), req)
 	if err != nil {
 		slog.Error("[Handler][CreateAdmin] Error CreateUser", "Err", err.Error())
 		if status == domain.StatusInternalServerError {

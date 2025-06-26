@@ -132,6 +132,7 @@ func (h *TourneyUsecase) CreateAdmin(ctx context.Context, req domain.UserRequest
 		slog.Error("[Usecase][CreateAdmin] Generate password", "Err", err.Error())
 		return
 	}
+	referalCode := helper.UuidGenerator()
 	res, status, err := h.mysqlRepository.CreateUser(ctx, domain.User{
 		Email:          req.Email,
 		Username:       req.Username,
@@ -140,6 +141,7 @@ func (h *TourneyUsecase) CreateAdmin(ctx context.Context, req domain.UserRequest
 		FullName:       req.FullName,
 		Gender:         req.Gender,
 		RoleID:         1,
+		ReferalCode:    &referalCode,
 	})
 	if err != nil {
 		slog.Error("[Usecase][Login]" + err.Error())
@@ -160,6 +162,7 @@ func (h *TourneyUsecase) GetUserPartner(ctx context.Context, req domain.GetAllUs
 	res.Data = make([]domain.UserPartnerDTO, len(user))
 	for i, v := range user {
 		res.Data[i] = domain.UserPartnerDTO{
+			ID:           v.ID,
 			Email:        v.Email,
 			Username:     v.Username,
 			PhoneNumber:  v.PhoneNumber,

@@ -46,7 +46,7 @@ func (t *tourneyMySQLRepository) CreateUser(ctx context.Context, req domain.User
 
 func (t *tourneyMySQLRepository) GetUserPartner(ctx context.Context, req domain.GetAllUserRequestPartner) (res []domain.User, count int, status int, err error) {
 	slog.Info("[Repository][GetUserPartner] GetUserPartner")
-	db := t.Conn.WithContext(ctx).Model(&domain.User{}).Where("role_id != 2").Where("id != ?", req.UIDSearcher)
+	db := t.Conn.WithContext(ctx).Model(&domain.User{}).Where("role_id != 1").Where("id != ?", req.UIDSearcher)
 	if req.Gender != nil && *req.Gender != "" {
 		db = db.Where("gender = ?", req.Gender)
 	}

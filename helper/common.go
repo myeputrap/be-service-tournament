@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
 
@@ -21,6 +22,10 @@ type UserLogin struct {
 	ID  int32  `json:"id"`
 	HID *int32 `json:"hid"`
 	RID *int32 `json:"rid"`
+}
+
+func UuidGenerator() string {
+	return uuid.New().String()[:5]
 }
 
 func GetUserLogin(c context.Context) (user UserLogin) {

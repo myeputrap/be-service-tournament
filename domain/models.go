@@ -81,6 +81,7 @@ type Tournament struct {
 	GenderEligibility string    `json:"gender_eligibility" gorm:"column:gender_eligibility" validate:"required"`
 	Quota             int       `json:"quota" gorm:"column:quota" validate:"required"`
 	Organizer         string    `json:"organizer" gorm:"column:organizer" validate:"required"`
+	CreatedBy         int64     `json:"created_by" gorm:"column:created_by;autoCreateTime"`
 	CreatedAt         time.Time `json:"created_at" gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt         time.Time `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
 }
