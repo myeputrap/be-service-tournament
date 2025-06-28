@@ -4,6 +4,7 @@ import (
 	"be-service-tournament/domain"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"gorm.io/gorm"
@@ -83,5 +84,30 @@ func (t *tourneyMySQLRepository) CreateParticipant(ctx context.Context, req doma
 		return
 	}
 	status = domain.StatusSuccessCreate
+	return
+}
+
+func (t *tourneyMySQLRepository) GetAllParticipant(ctx context.Context, req domain.GetAllParticipantRequest) (res []domain.Participant, count int64, status int, err error) {
+	slog.Info("[Repository][GetAllParticipant] GetAllParticipant")
+	db := t.Conn.WithContext(ctx).Model(&domain.Participant{}).Preload("UserA").Preload("UserB").Order(fmt.Sprintf("%s %s", req.Sort, req.Order)).Limit(int(req.Limit)).Offset(int(req.Offset))
+	err = db.Count(&count).Error
+	if err != nil {
+		slog.Error("[Repository][GetAllParticipant] err", "", err.Error())
+		status = domain.StatusInternalServerError
+		return
+	}
+	result := db.Find(&res)
+	if result.Error != nil {
+		slog.Error("[Repository][GetAllParticipant] err", "", result.Error)
+		status = domain.StatusInternalServerError
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		status = domain.StatusNotFound
+		err = domain.ErrNotFound
+		slog.Error("[Repository][GetAllParticipant] GetAllParticipant not found", "Err", err.Error())
+		return
+	}
 	return
 }

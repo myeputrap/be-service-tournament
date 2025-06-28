@@ -17,8 +17,7 @@ func (t *tourneyMySQLRepository) GetUserByParam(ctx context.Context, param map[s
 	for column, value := range param {
 		query = query.Where(column+" = ?", value)
 	}
-
-	err = query.First(&ttB).Error
+	err = query.Preload("Tier").Preload("Role").First(&ttB).Error
 	if err != nil {
 		slog.Error("[Repository][GetUserByParam] err", "", err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {

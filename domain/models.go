@@ -17,7 +17,9 @@ type User struct {
 	BirthDate      *time.Time `json:"birth_date" gorm:"column:birth_date"`
 	City           *string    `json:"city" gorm:"column:city"`
 	Nik            *string    `json:"nik" gorm:"column:nik"`
+	Tier           *Tier      `json:"tier" gorm:"foreignKey:TierID;references:id"`
 	TierID         *int64     `json:"tier_id" gorm:"column:tier_id"`
+	Role           *Role      `json:"role" gorm:"foreignKey:RoleID;references:id"`
 	RoleID         int64      `json:"role_id" gorm:"column:role_id"`
 	ReferalCode    *string    `json:"referal_code" gorm:"column:referal_code"`
 	CreatedAt      time.Time  `json:"created_at" gorm:"column:created_at;autoCreateTime"`
@@ -33,7 +35,14 @@ type Tier struct {
 	UpdatedAt time.Time `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
 }
 
-func (Tier) TableName() string { return "tier" }
+func (Tier) TableName() string { return "web.tier" }
+
+type Role struct {
+	ID       int64  `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
+	RoleName string `json:"role_name" gorm:"column:name;unique;not null"`
+}
+
+func (Role) TableName() string { return "web.role" }
 
 type PlayerProgress struct {
 	ID          int64     `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
@@ -91,8 +100,10 @@ func (Tournament) TableName() string { return "web.tournaments" }
 type Participant struct {
 	ID           int64     `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
 	TournamentID int64     `json:"tournament_id" gorm:"column:tournament_id"`
-	UserAID      int64     `json:"user_a_id" gorm:"column:user_a_id"`
-	UserBID      int64     `json:"user_b_id" gorm:"column:user_b_id"`
+	UserAID      int64     `json:"player1" gorm:"column:user_a_id"`
+	UserA        User      `json:"player1_detail" gorm:"foreignKey:UserAID;references:id"`
+	UserBID      int64     `json:"player2" gorm:"column:user_b_id"`
+	UserB        User      `json:"player2_detail" gorm:"foreignKey:UserBID;references:id"`
 	State        string    `json:"state" gorm:"column:state"`
 	PaymentProof *string   `json:"payment_proof" gorm:"column:payment_proof"`
 	CreatedAt    time.Time `json:"created_at" gorm:"column:created_at;autoCreateTime"`

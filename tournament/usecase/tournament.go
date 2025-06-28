@@ -15,11 +15,13 @@ import (
 
 type TourneyUsecase struct {
 	mysqlRepository domain.SQLTournamentRepository
+	assetRepository domain.AssetRepository
 }
 
-func NewTournamentUsecase(mysqlRepo domain.SQLTournamentRepository) domain.TournamentUsecase {
+func NewTournamentUsecase(mysqlRepo domain.SQLTournamentRepository, assetRepository domain.AssetRepository) domain.TournamentUsecase {
 	return &TourneyUsecase{
 		mysqlRepository: mysqlRepo,
+		assetRepository: assetRepository,
 	}
 }
 

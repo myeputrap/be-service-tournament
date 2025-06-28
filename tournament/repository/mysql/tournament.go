@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -163,4 +164,29 @@ func (t *tourneyMySQLRepository) GetAllTournament(ctx context.Context, req domai
 		return
 	}
 	return
+}
+
+func (r *tourneyMySQLRepository) DynamicEditTable(ctx context.Context, params map[string]string, id int, model any) (status int, err error) {
+	slog.Info("[Repository][DynamicEditTable] Update Table")
+
+	updateData := map[string]interface{}{}
+	for key, value := range params {
+		if strings.ToLower(value) == "null" {
+			updateData[key] = nil
+		} else {
+			updateData[key] = value
+		}
+	}
+
+	err = r.Conn.WithContext(ctx).
+		Model(model).
+		Where("id = ?", id).
+		Updates(updateData).Error
+
+	if err != nil {
+		slog.Error("[Repository][DynamicEditTable] Update error", slog.Any("error", err))
+		return domain.StatusInternalServerError, err
+	}
+
+	return domain.StatusSuccess, nil
 }

@@ -29,12 +29,19 @@ func RouterAPI(app *fiber.App, us domain.TournamentUsecase) {
 
 	adm.Use(jwtware.New(JWTMiddlewareConfiguration()), MiddlewareJWTAuthorizationAdmin)
 	user.Use(jwtware.New(JWTMiddlewareConfiguration()), MiddlewareJWTAuthorizationUser)
+
 	adm.Post("/tournament", authMiddleware, handler.CreateTournament)
+	adm.Get("/tournament", authMiddleware, handler.GetAllTournament)
 
 	user.Get("/list-user-partner", authMiddleware, handler.ListUserPartner)
 	user.Post("/user-participant", authMiddleware, handler.CreateUserParticipant)
+	adm.Get("/user/:id", authMiddleware, handler.GetUserByID)
+	user.Get("/user-detail", authMiddleware, handler.GetUserByDetail)
+	user.Post("/payment-proof/:id", authMiddleware, handler.PostImagePaymentProof)
+
 	adm.Patch("/participant/:id/status", authMiddleware, handler.UpdateParticipant)
-	adm.Get("/tournament", authMiddleware, handler.GetAllTournament)
+	adm.Get("/participant", authMiddleware, handler.GetAllPaticipant)
+
 }
 
 func JWTMiddlewareConfiguration() jwtware.Config {

@@ -67,6 +67,7 @@ func (h *tournamentHandler) Login(c *fiber.Ctx) error {
 		}
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
 	}
+	status = domain.StatusSuccess
 	response := helper.NewResponse(status, "OK", nil, r)
 	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
 }
@@ -184,7 +185,7 @@ func (h *tournamentHandler) GetAllTournament(c *fiber.Ctx) error {
 		}
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
 	}
-	status = domain.StatusSuccessCreate
+	status = domain.StatusSuccess
 	response := helper.NewResponse(status, "OK", nil, r)
 	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
 }

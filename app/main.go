@@ -12,6 +12,7 @@ import (
 	"time"
 
 	_DeliveryHTTP "be-service-tournament/tournament/delivery/http"
+	_RepoAsset "be-service-tournament/tournament/repository/asset"
 	_RepoMySQL "be-service-tournament/tournament/repository/mysql"
 	_Usecase "be-service-tournament/tournament/usecase"
 
@@ -167,7 +168,8 @@ func main() {
 	})
 	//register uc and repository
 	mysqlRepo := _RepoMySQL.NewSQLTournamentRepository(db)
-	tourneyUsecase := _Usecase.NewTournamentUsecase(mysqlRepo)
+	assetRepo := _RepoAsset.NewAssetRepository()
+	tourneyUsecase := _Usecase.NewTournamentUsecase(mysqlRepo, assetRepo)
 	_DeliveryHTTP.RouterAPI(app, tourneyUsecase)
 	// Initialize HTTP web framework
 	log.Println("HTTP server is running...")

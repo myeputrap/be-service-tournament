@@ -168,7 +168,7 @@ var defaultConfig = &Config{
 				Idle:  120,
 			},
 			AllowsOrigin:   "*",
-			AssetPath:      "",
+			AssetPath:      "/var/lib/padel",
 			BaseURL:        "",
 			CacheStaticTTL: 24 * 60 * 60,
 		},
@@ -188,10 +188,10 @@ var defaultConfig = &Config{
 		SetConnMaxLifetime: 0,
 	},
 	JWT: JWT{
-		Expiration:     3600,
+		Expiration:     36000000,
 		SigningMethod:  "HS256",
 		SignatureKey:   "kmzway87aa",
-		ExpirationTemp: 600,
+		ExpirationTemp: 600000,
 	},
 	DefaultLimitQuery: 100,
 	SMTP: SMTP{

@@ -5,6 +5,7 @@ import (
 	"be-service-tournament/helper"
 	"context"
 	"log/slog"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -155,7 +156,7 @@ func (h *TourneyUsecase) GetUserPartner(ctx context.Context, req domain.GetAllUs
 	slog.Info("[Usecase][GetUserPartner] GetUserPartner")
 	user, _, status, err := h.mysqlRepository.GetUserPartner(ctx, req)
 	if err != nil {
-		slog.Error("[Usecase][Login]" + err.Error())
+		slog.Error("[Usecase][GetUserPartner]" + err.Error())
 		return
 	}
 	res.Count = len(user)
@@ -173,4 +174,16 @@ func (h *TourneyUsecase) GetUserPartner(ctx context.Context, req domain.GetAllUs
 		}
 	}
 	return res, domain.StatusSuccess, nil
+}
+
+func (h *TourneyUsecase) GetUserByID(ctx context.Context, id int64) (res *domain.User, status int, err error) {
+	slog.Info("[Usecase][GetUserByID] GetUserByID")
+	param := make(map[string]string)
+	param["id"] = strconv.Itoa(int(id))
+	res, status, err = h.mysqlRepository.GetUserByParam(ctx, param)
+	if err != nil {
+		slog.Error("[Usecase][GetUserByID]" + err.Error())
+		return
+	}
+	return
 }

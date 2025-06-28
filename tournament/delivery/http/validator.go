@@ -37,10 +37,10 @@ func MiddlewareJWTAuthorizationAdmin(c *fiber.Ctx) error {
 	}
 	loginType := claims["type"].(string)
 	if loginType != "admin" {
-		err = domain.ErrUnauthorized
-		slog.Info("[Validator][MiddlewareJWTAuthorization] token expired", "Err", err.Error())
-		response := helper.NewResponse(domain.StatusUnauthorized, err.Error(), nil, nil)
-		return c.Status(domain.GetHttpStatusCode(domain.StatusUnauthorized)).JSON(response)
+		err = domain.ErrForbidden
+		slog.Info("[Validator][MiddlewareJWTAuthorization] forbidden role to api admin", "Err", err.Error())
+		response := helper.NewResponse(domain.StatusForbidden, err.Error(), nil, nil)
+		return c.Status(domain.GetHttpStatusCode(domain.StatusForbidden)).JSON(response)
 	}
 	errSet := setPlayloadToContext(c)
 	if errSet != nil {
@@ -74,10 +74,10 @@ func MiddlewareJWTAuthorizationUser(c *fiber.Ctx) error {
 	}
 	loginType := claims["type"].(string)
 	if loginType != "user" {
-		err = domain.ErrUnauthorized
-		slog.Info("[Validator][MiddlewareJWTAuthorization] token expired", "Err", err.Error())
+		err = domain.ErrForbidden
+		slog.Info("[Validator][MiddlewareJWTAuthorization] forbidden role to api user", "Err", err.Error())
 		response := helper.NewResponse(domain.StatusUnauthorized, err.Error(), nil, nil)
-		return c.Status(domain.GetHttpStatusCode(domain.StatusUnauthorized)).JSON(response)
+		return c.Status(domain.GetHttpStatusCode(domain.StatusForbidden)).JSON(response)
 	}
 	errSet := setPlayloadToContext(c)
 	if errSet != nil {

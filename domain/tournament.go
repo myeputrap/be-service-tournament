@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"mime/multipart"
 
 	"gorm.io/gorm"
 )
@@ -79,22 +80,41 @@ type GetAllTournamentRequest struct {
 	Sort   string `json:"sort" validate:"required"`
 	Order  string `json:"order" validate:"required"`
 }
-
 type GetAllTournamentResponse struct {
 	Metadata MetaData     `json:"meta"`
 	Data     []Tournament `json:"data"`
 }
+type RequestPaymentProffImage struct {
+	ParticipantID int64                 `json:"participant_id"`
+	Images        *multipart.FileHeader `json:"images" form:"images" validate:"required"`
+}
 
+type GetAllParticipantRequest struct {
+	Page   int64  `json:"page" validate:"required"`
+	Limit  int64  `json:"limit" validate:"required"`
+	Offset int64  `json:"offeset"`
+	Sort   string `json:"sort" validate:"required"`
+	Order  string `json:"order" validate:"required"`
+}
+
+type GetAllParticipantResponse struct {
+	Metadata MetaData      `json:"meta"`
+	Data     []Participant `json:"data"`
+}
 type TournamentUsecase interface {
 	Login(ctx context.Context, req RequestLogin) (r map[string]interface{}, status int, err error)
 	InquiryTourneyPublic(ctx context.Context) (response []InquiryTourneyPublicResponse, status int, err error)
+
 	CreateUser(ctx context.Context, req UserRequestDTO) (res *User, multiErr *MultipleErrorResponse, status int, err error)
+	GetUserByID(ctx context.Context, id int64) (res *User, status int, err error)
 	GetUserPartner(ctx context.Context, req GetAllUserRequestPartner) (res GetUserPartnerResponseDTO, status int, err error)
 	CreateTournament(ctx context.Context, req Tournament) (res Tournament, status int, err error)
 	FormPartnershipParticipant(ctx context.Context, req ParticipantDTO) (status int, err error)
 	CreateAdmin(ctx context.Context, req UserRequestDTO) (res *User, multiErr *MultipleErrorResponse, status int, err error)
 	UpdateParticipant(ctx context.Context, req UpdateParticipantRequest) (status int, err error)
 	GetAllTournament(ctx context.Context, req GetAllTournamentRequest) (res GetAllTournamentResponse, status int, err error)
+	GetAllParticipant(ctx context.Context, req GetAllParticipantRequest) (res GetAllParticipantResponse, status int, err error)
+	RoleCreatePaymentProofImage(ctx context.Context, req RequestPaymentProffImage) (status int, err error)
 }
 
 type SQLTournamentRepository interface {
@@ -113,4 +133,11 @@ type SQLTournamentRepository interface {
 	IsPlayerExistOnParticipant(ctx context.Context, tourneyID int64, userID int64) (isExist bool, status int, err error)
 	CreateParticipant(ctx context.Context, req Participant) (status int, err error)
 	GetAllTournament(ctx context.Context, req GetAllTournamentRequest) (res []Tournament, count int64, status int, err error)
+	GetAllParticipant(ctx context.Context, req GetAllParticipantRequest) (res []Participant, count int64, status int, err error)
+	DynamicEditTable(ctx context.Context, params map[string]string, id int, model any) (status int, err error)
+}
+
+type AssetRepository interface {
+	Remove(path string, generatedFileName string) (err error)
+	SaveFile(asset *multipart.FileHeader, path string, generatedFileName string) (fileName string, err error)
 }

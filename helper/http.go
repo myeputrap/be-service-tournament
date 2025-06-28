@@ -219,7 +219,7 @@ func IsSVG(asset *multipart.FileHeader) (err error) {
 	return
 }
 
-func CheckFileHotelBackground(asset *multipart.FileHeader) (err error) {
+func CheckFile(asset *multipart.FileHeader) (err error) {
 	// Open the file
 	fileContent, err := asset.Open()
 	if err != nil {

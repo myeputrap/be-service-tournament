@@ -3,8 +3,13 @@ package usecase
 import (
 	"be-service-tournament/domain"
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"log/slog"
 	"strconv"
+	"time"
+
+	"github.com/spf13/viper"
 )
 
 func (h *TourneyUsecase) FormPartnershipParticipant(ctx context.Context, req domain.ParticipantDTO) (status int, err error) {
@@ -85,4 +90,55 @@ func (h *TourneyUsecase) UpdateParticipant(ctx context.Context, req domain.Updat
 		return
 	}
 	return domain.StatusSuccess, nil
+}
+
+func (h *TourneyUsecase) RoleCreatePaymentProofImage(ctx context.Context, req domain.RequestPaymentProffImage) (status int, err error) {
+	slog.Info("[Usecase][RoleCreatePaymentProofImage] RoleCreatePaymentProofImage")
+	assetpath := viper.GetString("server.http.asset_path")
+	param := make(map[string]string)
+	param["id"] = strconv.Itoa(int(req.ParticipantID))
+	//check participantID
+	participant, status, err := h.mysqlRepository.GetParticipantByParam(ctx, param) //TODO ask which statusregistered allow to upload image paymentProof
+	if err != nil {
+		slog.Error("[Usecase][RoleCreatePaymentProofImage]" + err.Error())
+		return
+	}
+	fn := strconv.Itoa(int(participant.ID)) + strconv.FormatInt(time.Now().Unix(), 10)
+	hash := md5.Sum([]byte(fn))
+	encoded := hex.EncodeToString(hash[:])
+
+	fileName, err := h.assetRepository.SaveFile(req.Images, assetpath+"/images/payment_proof	", encoded)
+	if err != nil {
+		slog.Error("[Usecase][CreateTheme][SaveFileBackground]", "Err", err)
+		status = domain.StatusInternalServerError
+		return
+	}
+	status, err = h.mysqlRepository.DynamicEditTable(ctx, map[string]string{"payment_proof": fileName}, int(participant.ID), &domain.Participant{})
+	if err != nil {
+		slog.Error("[Usecase][DynamicEditTable][DynamicEditTable]", "Err", err)
+		status = domain.StatusInternalServerError
+		return
+	}
+	return
+}
+func (h *TourneyUsecase) GetAllParticipant(ctx context.Context, req domain.GetAllParticipantRequest) (res domain.GetAllParticipantResponse, status int, err error) {
+	slog.Info("[Usecase][GetParticipantList] GetParticipantList")
+	req.Offset = (req.Page - 1) * req.Limit
+	out, count, status, err := h.mysqlRepository.GetAllParticipant(ctx, req)
+	if err != nil {
+		slog.Error("[Usecase][GetParticipantList] " + err.Error())
+		return
+	}
+
+	res.Metadata = domain.MetaData{
+		TotalData: uint(count),
+		TotalPage: (uint(count) + uint(req.Limit) - 1) / uint(req.Limit),
+		Page:      uint(req.Page),
+		Limit:     uint(req.Limit),
+		Sort:      req.Sort,
+		Order:     req.Order,
+	}
+	res.Data = out
+
+	return res, domain.StatusSuccess, nil
 }
