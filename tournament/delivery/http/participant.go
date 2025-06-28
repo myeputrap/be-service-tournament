@@ -130,6 +130,7 @@ func (h *tournamentHandler) PostImagePaymentProof(c *fiber.Ctx) error {
 	req.ParticipantID = parID
 	file, err := c.FormFile("images")
 	if err != nil {
+		slog.Error("[Handler][PostImagePaymentProof] " + err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Failed to get uploaded image",
 		})
