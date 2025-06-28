@@ -92,22 +92,22 @@ func (h *TourneyUsecase) UpdateParticipant(ctx context.Context, req domain.Updat
 	return domain.StatusSuccess, nil
 }
 
-func (h *TourneyUsecase) RoleCreatePaymentProofImage(ctx context.Context, req domain.RequestPaymentProffImage) (status int, err error) {
-	slog.Info("[Usecase][RoleCreatePaymentProofImage] RoleCreatePaymentProofImage")
+func (h *TourneyUsecase) CreatePaymentProofImage(ctx context.Context, req domain.RequestPaymentProffImage) (status int, err error) {
+	slog.Info("[Usecase][CreatePaymentProofImage] CreatePaymentProofImage")
 	assetpath := viper.GetString("server.http.asset_path")
 	param := make(map[string]string)
 	param["id"] = strconv.Itoa(int(req.ParticipantID))
 	//check participantID
 	participant, status, err := h.mysqlRepository.GetParticipantByParam(ctx, param) //TODO ask which statusregistered allow to upload image paymentProof
 	if err != nil {
-		slog.Error("[Usecase][RoleCreatePaymentProofImage]" + err.Error())
+		slog.Error("[Usecase][CreatePaymentProofImage]" + err.Error())
 		return
 	}
 	fn := strconv.Itoa(int(participant.ID)) + strconv.FormatInt(time.Now().Unix(), 10)
 	hash := md5.Sum([]byte(fn))
 	encoded := hex.EncodeToString(hash[:])
 
-	fileName, err := h.assetRepository.SaveFile(req.Images, assetpath+"/images/payment_proof	", encoded)
+	fileName, err := h.assetRepository.SaveFile(req.Images, assetpath+"/images/payment_proof", encoded)
 	if err != nil {
 		slog.Error("[Usecase][CreateTheme][SaveFileBackground]", "Err", err)
 		status = domain.StatusInternalServerError
@@ -121,6 +121,7 @@ func (h *TourneyUsecase) RoleCreatePaymentProofImage(ctx context.Context, req do
 	}
 	return
 }
+
 func (h *TourneyUsecase) GetAllParticipant(ctx context.Context, req domain.GetAllParticipantRequest) (res domain.GetAllParticipantResponse, status int, err error) {
 	slog.Info("[Usecase][GetParticipantList] GetParticipantList")
 	req.Offset = (req.Page - 1) * req.Limit

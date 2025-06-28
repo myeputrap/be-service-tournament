@@ -153,7 +153,7 @@ func (h *tournamentHandler) PostImagePaymentProof(c *fiber.Ctx) error {
 		status = domain.StatusInternalServerError
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Internal server error", nil, nil))
 	}
-	status, err = h.hospitalityusecase.RoleCreatePaymentProofImage(c.Context(), req)
+	status, err = h.hospitalityusecase.CreatePaymentProofImage(c.Context(), req)
 	if err != nil {
 		slog.Error("[Handler][UpdateParticipant] Error UpdateParticipant", "Err", err.Error())
 		if status == domain.StatusInternalServerError {

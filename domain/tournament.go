@@ -114,7 +114,7 @@ type TournamentUsecase interface {
 	UpdateParticipant(ctx context.Context, req UpdateParticipantRequest) (status int, err error)
 	GetAllTournament(ctx context.Context, req GetAllTournamentRequest) (res GetAllTournamentResponse, status int, err error)
 	GetAllParticipant(ctx context.Context, req GetAllParticipantRequest) (res GetAllParticipantResponse, status int, err error)
-	RoleCreatePaymentProofImage(ctx context.Context, req RequestPaymentProffImage) (status int, err error)
+	CreatePaymentProofImage(ctx context.Context, req RequestPaymentProffImage) (status int, err error)
 }
 
 type SQLTournamentRepository interface {
