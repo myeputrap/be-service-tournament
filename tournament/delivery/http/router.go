@@ -32,14 +32,20 @@ func RouterAPI(app *fiber.App, us domain.TournamentUsecase) {
 
 	adm.Post("/tournament", authMiddleware, handler.CreateTournament)
 	adm.Get("/tournament", authMiddleware, handler.GetAllTournament)
+	adm.Get("/tournament/:id", authMiddleware, handler.GetTournamentByID)
+	adm.Put("/tournament", authMiddleware, handler.UpdateTournament)
+	adm.Delete("/tournament/:id", authMiddleware, handler.DeleteTournamentByID)
+	adm.Get("/tournament-user/:id", authMiddleware, handler.GetTournamentParticipant)
 
 	user.Get("/list-user-partner", authMiddleware, handler.ListUserPartner)
 	user.Post("/user-participant", authMiddleware, handler.CreateUserParticipant)
 	adm.Get("/user/:id", authMiddleware, handler.GetUserByID)
+	user.Get("/user-tournament", authMiddleware, handler.GetUserTournament)
 	user.Get("/user-detail", authMiddleware, handler.GetUserByDetail)
+
 	user.Post("/payment-proof/:id", authMiddleware, handler.PostImagePaymentProof)
 
-	adm.Patch("/participant/:id/status", authMiddleware, handler.UpdateParticipant)
+	adm.Patch("/participant/:id/status", authMiddleware, handler.UpdateParticipantStatus)
 	adm.Get("/participant", authMiddleware, handler.GetAllPaticipant)
 
 }

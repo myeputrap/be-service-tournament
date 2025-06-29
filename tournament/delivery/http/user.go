@@ -180,3 +180,26 @@ func (h *tournamentHandler) CreateImagePaymentProff(c *fiber.Ctx) error {
 	response := helper.NewResponse(status, "OK", nil, r)
 	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
 }
+
+func (h *tournamentHandler) GetUserTournament(c *fiber.Ctx) error {
+	slog.Info("[Handler][GetUserTournament] GetUserTournament")
+	var status int
+	var userID int64
+	var err error
+	var message string
+	dataLogin := helper.GetUserLogin(c.Context())
+	userID = int64(dataLogin.ID)
+	r, status, err := h.hospitalityusecase.GetUserTournament(context.Background(), userID)
+	if err != nil {
+		slog.Error("[Handler][CreateAdmin] Error GetUserTournament", "Err", err.Error())
+		if status == domain.StatusInternalServerError {
+			message = "something wrong, can't GetUserTournament"
+		} else {
+			message = domain.GetCustomStatusMessage(status, "")
+		}
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
+	}
+	status = domain.StatusSuccess
+	response := helper.NewResponse(status, "OK", nil, r)
+	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
+}

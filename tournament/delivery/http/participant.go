@@ -52,14 +52,14 @@ func (h *tournamentHandler) CreateUserParticipant(c *fiber.Ctx) error {
 	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
 }
 
-func (h *tournamentHandler) UpdateParticipant(c *fiber.Ctx) error {
-	slog.Info("[Handler][UpdateParticipant] UpdateParticipant")
+func (h *tournamentHandler) UpdateParticipantStatus(c *fiber.Ctx) error {
+	slog.Info("[Handler][UpdateParticipantStatus] UpdateParticipantStatus")
 
 	var status int
 	var userID int64
 	var err error
 	var message string
-	var req domain.UpdateParticipantRequest
+	var req domain.UpdateParticipantStatusRequest
 	if err := c.BodyParser(&req); err != nil {
 		status := domain.StatusBadRequest
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, err.Error(), nil, nil))
@@ -70,18 +70,18 @@ func (h *tournamentHandler) UpdateParticipant(c *fiber.Ctx) error {
 		if err != nil {
 			status = domain.StatusWrongValue
 			message = domain.GetCustomStatusMessage(status, "id")
-			slog.Error("[Handler][UpdateParticipant] " + message + ": " + err.Error())
+			slog.Error("[Handler][UpdateParticipantStatus] " + message + ": " + err.Error())
 			return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
 		}
 	} else {
 		status = domain.StatusMissingParameter
 		message = domain.GetCustomStatusMessage(status, "id")
-		slog.Error("[Handler][UpdateParticipant] " + message)
+		slog.Error("[Handler][UpdateParticipantStatus] " + message)
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
 	}
 	req.UserID = userID
 	if err := h.validator.Struct(req); err != nil {
-		slog.Error("[Handler][UpdateParticipant]", "Err", err)
+		slog.Error("[Handler][UpdateParticipantStatus]", "Err", err)
 		status = domain.StatusMissingParameter
 		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, "Bad Request", nil, nil))
 	}
@@ -91,9 +91,9 @@ func (h *tournamentHandler) UpdateParticipant(c *fiber.Ctx) error {
 	}
 	status, err = h.hospitalityusecase.UpdateParticipant(c.Context(), req)
 	if err != nil {
-		slog.Error("[Handler][UpdateParticipant] Error UpdateParticipant", "Err", err.Error())
+		slog.Error("[Handler][UpdateParticipantStatus] Error UpdateParticipantStatus", "Err", err.Error())
 		if status == domain.StatusInternalServerError {
-			message = "something wrong, can't UpdateParticipant"
+			message = "something wrong, can't UpdateParticipantStatus"
 		} else {
 			message = domain.GetCustomStatusMessage(status, "")
 		}

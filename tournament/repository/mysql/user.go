@@ -28,6 +28,24 @@ func (t *tourneyMySQLRepository) GetUserByParam(ctx context.Context, param map[s
 	}
 	return &ttB, domain.StatusSuccess, nil
 }
+func (t *tourneyMySQLRepository) GetTournamentParticipant(ctx context.Context, req []int64) (res []domain.User, status int, err error) {
+	slog.Info("[Repository][GetTournamentParticipant] GetTournamentParticipant")
+	db := t.Conn.WithContext(ctx).Model(&domain.User{}).Preload("Tier").Where("id IN ?", req)
+	result := db.Find(&res)
+	if result.Error != nil {
+		slog.Error("[Repository][GetTournamentParticipant] err", "", result.Error)
+		status = domain.StatusInternalServerError
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		status = domain.StatusNotFound
+		err = domain.ErrNotFound
+		slog.Error("[Repository][GetTournamentParticipant] GetTournamentParticipant not found", "Err", err.Error())
+		return
+	}
+	return
+}
 
 func (t *tourneyMySQLRepository) CreateUser(ctx context.Context, req domain.User) (res domain.User, status int, err error) {
 	slog.Info("[Repository][CreateUser] CreateUser")

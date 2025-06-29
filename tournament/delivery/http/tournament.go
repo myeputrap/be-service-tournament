@@ -189,3 +189,54 @@ func (h *tournamentHandler) GetAllTournament(c *fiber.Ctx) error {
 	response := helper.NewResponse(status, "OK", nil, r)
 	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
 }
+
+func (h *tournamentHandler) GetTournamentByID(c *fiber.Ctx) error {
+	status = domain.StatusSuccess
+	response := helper.NewResponse(status, "OK", nil, nil) //TODO change this into res from UC
+	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
+}
+
+func (h *tournamentHandler) UpdateTournament(c *fiber.Ctx) error {
+	status = domain.StatusSuccess
+	response := helper.NewResponse(status, "OK", nil, nil) //TODO change this into res from UC
+	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
+}
+
+func (h *tournamentHandler) DeleteTournamentByID(c *fiber.Ctx) error {
+	status = domain.StatusSuccess
+	response := helper.NewResponse(status, "OK", nil, nil) //TODO change this into res from UC
+	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
+}
+
+func (h *tournamentHandler) GetTournamentParticipant(c *fiber.Ctx) error {
+	var err error
+	var req domain.GetTournamentParticipantRequest
+	tournamentIDStr := c.Params("id")
+	if tournamentIDStr != "" {
+		req.TournamentID, err = strconv.ParseInt(tournamentIDStr, 10, 64)
+		if err != nil {
+			status = domain.StatusWrongValue
+			message = domain.GetCustomStatusMessage(status, "id")
+			slog.Error("[Handler][GetTournamentParticipant] " + message + ": " + err.Error())
+			return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
+		}
+	} else {
+		status = domain.StatusMissingParameter
+		message = domain.GetCustomStatusMessage(status, "id")
+		slog.Error("[Handler][GetTournamentParticipant] " + message)
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
+	}
+	user, status, err := h.hospitalityusecase.GetTournamentParticipant(c.Context(), req)
+	if err != nil {
+		slog.Error("[Handler][Login] Error GetTournamentParticipant", "Err", err.Error())
+		if status == domain.StatusInternalServerError {
+			message = "something wrong, can't GetTournamentParticipant"
+		} else {
+			message = domain.GetCustomStatusMessage(status, "")
+		}
+		return c.Status(domain.GetHttpStatusCode(status)).JSON(helper.NewResponse(status, message, nil, nil))
+	}
+	status = domain.StatusSuccess
+	response := helper.NewResponse(status, "OK", nil, user)
+	return c.Status(domain.GetHttpStatusCode(status)).JSON(response)
+}

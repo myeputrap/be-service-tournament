@@ -190,3 +190,22 @@ func (r *tourneyMySQLRepository) DynamicEditTable(ctx context.Context, params ma
 
 	return domain.StatusSuccess, nil
 }
+
+func (t *tourneyMySQLRepository) GetTournamentByIDs(ctx context.Context, param []int64) (res []domain.Tournament, status int, err error) {
+	db := t.Conn.WithContext(ctx).Model(&domain.Tournament{}).Where("id in ?", param)
+
+	result := db.Find(&res)
+	if result.Error != nil {
+		slog.Error("[Repository][GetAllTournament] err", "", result.Error)
+		status = domain.StatusInternalServerError
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		status = domain.StatusNotFound
+		err = domain.ErrNotFound
+		slog.Error("[Repository][GetAllTournament] GetAllTournament not found", "Err", err.Error())
+		return
+	}
+	return res, domain.StatusSuccess, nil
+}

@@ -68,9 +68,19 @@ type ParticipantDTO struct {
 	ReferalCode  string `json:"referal_code" validate:"required"`
 }
 
-type UpdateParticipantRequest struct {
+type UpdateParticipantStatusRequest struct {
 	UserID int64  `json:"user_id" validate:"required"`
 	Status string `json:"status" validate:"required"`
+}
+
+type UserDTO struct {
+	ID          int64  `json:"id"`
+	Email       string `json:"email"`
+	Username    string `json:"username"`
+	PhoneNumber string `json:"phone_number"`
+	FullName    string `json:"full_name"`
+	Gender      string `json:"gender"`
+	TierName    string `json:"tier_name"`
 }
 
 type GetAllTournamentRequest struct {
@@ -79,6 +89,9 @@ type GetAllTournamentRequest struct {
 	Offset int64  `json:"offeset"`
 	Sort   string `json:"sort" validate:"required"`
 	Order  string `json:"order" validate:"required"`
+}
+type GetTournamentParticipantRequest struct {
+	TournamentID int64 `json:"tournament_id" `
 }
 type GetAllTournamentResponse struct {
 	Metadata MetaData     `json:"meta"`
@@ -111,10 +124,12 @@ type TournamentUsecase interface {
 	CreateTournament(ctx context.Context, req Tournament) (res Tournament, status int, err error)
 	FormPartnershipParticipant(ctx context.Context, req ParticipantDTO) (status int, err error)
 	CreateAdmin(ctx context.Context, req UserRequestDTO) (res *User, multiErr *MultipleErrorResponse, status int, err error)
-	UpdateParticipant(ctx context.Context, req UpdateParticipantRequest) (status int, err error)
+	UpdateParticipant(ctx context.Context, req UpdateParticipantStatusRequest) (status int, err error)
 	GetAllTournament(ctx context.Context, req GetAllTournamentRequest) (res GetAllTournamentResponse, status int, err error)
 	GetAllParticipant(ctx context.Context, req GetAllParticipantRequest) (res GetAllParticipantResponse, status int, err error)
 	CreatePaymentProofImage(ctx context.Context, req RequestPaymentProffImage) (status int, err error)
+	GetTournamentParticipant(ctx context.Context, req GetTournamentParticipantRequest) (res []UserDTO, status int, err error)
+	GetUserTournament(ctx context.Context, id int64) (res []Tournament, status int, err error)
 }
 
 type SQLTournamentRepository interface {
@@ -128,13 +143,16 @@ type SQLTournamentRepository interface {
 	GetUserPartner(ctx context.Context, req GetAllUserRequestPartner) (res []User, count int, status int, err error)
 	CreateTournament(ctx context.Context, req Tournament) (res Tournament, status int, err error)
 	GetTournamentByParam(ctx context.Context, param map[string]string) (res *Tournament, status int, err error)
+	GetTournamentByIDs(ctx context.Context, param []int64) (res []Tournament, status int, err error)
 	GetParticipantByParam(ctx context.Context, param map[string]string) (res *Participant, status int, err error)
+	GetParticipantByParamArray(ctx context.Context, param map[string]string) (res []Participant, status int, err error)
 	UpdateParticipant(ctx context.Context, params map[string]string, id int64) (status int, err error)
 	IsPlayerExistOnParticipant(ctx context.Context, tourneyID int64, userID int64) (isExist bool, status int, err error)
 	CreateParticipant(ctx context.Context, req Participant) (status int, err error)
 	GetAllTournament(ctx context.Context, req GetAllTournamentRequest) (res []Tournament, count int64, status int, err error)
 	GetAllParticipant(ctx context.Context, req GetAllParticipantRequest) (res []Participant, count int64, status int, err error)
 	DynamicEditTable(ctx context.Context, params map[string]string, id int, model any) (status int, err error)
+	GetTournamentParticipant(ctx context.Context, req []int64) (res []User, status int, err error)
 }
 
 type AssetRepository interface {

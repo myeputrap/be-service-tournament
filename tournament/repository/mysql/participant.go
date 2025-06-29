@@ -111,3 +111,27 @@ func (t *tourneyMySQLRepository) GetAllParticipant(ctx context.Context, req doma
 	}
 	return
 }
+
+func (t *tourneyMySQLRepository) GetParticipantByParamArray(ctx context.Context, param map[string]string) (res []domain.Participant, status int, err error) {
+	slog.Info("[Repository][GetParticipantByParamArray] GetParticipantByParamArray")
+
+	query := t.Conn.WithContext(ctx)
+
+	for column, value := range param {
+		query = query.Where(column+" = ?", value)
+	}
+
+	err = query.Find(&res).Error
+	if err != nil {
+		slog.Error("[Repository][GetParticipantByParamArray] err", "", err)
+		status = domain.StatusInternalServerError
+		return
+	}
+
+	// If no results found, return 404
+	if len(res) == 0 {
+		return nil, domain.StatusNotFound, domain.ErrNotFound
+	}
+
+	return res, domain.StatusSuccess, nil
+}

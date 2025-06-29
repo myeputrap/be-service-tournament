@@ -147,3 +147,48 @@ func (h *TourneyUsecase) GetAllTournament(ctx context.Context, req domain.GetAll
 
 	return res, domain.StatusSuccess, nil
 }
+
+func (h *TourneyUsecase) GetTournamentParticipant(ctx context.Context, req domain.GetTournamentParticipantRequest) (res []domain.UserDTO, status int, err error) {
+	slog.Info("[Usecase][GetTournamentParticipant] GetAllTournament")
+	//check userID
+	param := make(map[string]string)
+	param["id"] = strconv.Itoa(int(req.TournamentID))
+	_, status, err = h.mysqlRepository.GetTournamentByParam(ctx, param)
+	if err != nil {
+		slog.Error("[Usecase][GetTournamentByParam] " + err.Error())
+		return
+	}
+	//getUserID from participant
+	var idArray []int64
+	param = make(map[string]string)
+	param["tournament_id"] = strconv.Itoa(int(req.TournamentID))
+	participant, status, err := h.mysqlRepository.GetParticipantByParamArray(ctx, param)
+	if err != nil {
+		slog.Error("[Usecase][GetParticipantByParamArray] " + err.Error())
+		return
+	}
+	for _, v := range participant {
+		idArray = append(idArray, v.UserAID)
+		idArray = append(idArray, v.UserBID)
+	}
+	//getDetailUser
+	user, status, err := h.mysqlRepository.GetTournamentParticipant(ctx, idArray)
+	if err != nil {
+		slog.Error("[Usecase][GetTournamentParticipant] " + err.Error())
+		return
+	}
+	res = make([]domain.UserDTO, len(user))
+	for i, v := range user {
+		res[i] = domain.UserDTO{
+			ID:          v.ID,
+			Email:       v.Email,
+			Username:    v.Username,
+			PhoneNumber: v.PhoneNumber,
+			FullName:    v.FullName,
+			Gender:      v.Gender,
+			TierName:    v.Tier.TierName,
+		}
+	}
+
+	return
+}

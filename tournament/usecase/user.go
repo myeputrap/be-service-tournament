@@ -187,3 +187,35 @@ func (h *TourneyUsecase) GetUserByID(ctx context.Context, id int64) (res *domain
 	}
 	return
 }
+
+func (h *TourneyUsecase) GetUserTournament(ctx context.Context, id int64) (res []domain.Tournament, status int, err error) {
+	slog.Info("[Usecase][GetUserTournament] GetUserTournament")
+	//check userID
+	param := make(map[string]string)
+	param["id"] = strconv.Itoa(int(id))
+	_, status, err = h.mysqlRepository.GetUserByParam(ctx, param)
+	if err != nil {
+		slog.Error("[Usecase][GetUserTournament] " + err.Error())
+		return
+	}
+
+	//getTournamentID
+	var idArray []int64
+	param = make(map[string]string)
+	param["user_a_id"] = strconv.Itoa(int(id))
+	param["user_b_id"] = strconv.Itoa(int(id))
+	participant, status, err := h.mysqlRepository.GetParticipantByParamArray(ctx, param)
+	if err != nil {
+		slog.Error("[Usecase][GetUserTournament] " + err.Error())
+		return
+	}
+	for _, v := range participant {
+		idArray = append(idArray, v.TournamentID)
+	}
+	tourney, status, err := h.mysqlRepository.GetTournamentByIDs(ctx, idArray)
+	if err != nil {
+		slog.Error("[Usecase][GetUserTournament] " + err.Error())
+		return
+	}
+	return tourney, domain.StatusSuccess, nil
+}

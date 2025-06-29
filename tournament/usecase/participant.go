@@ -72,7 +72,7 @@ func (h *TourneyUsecase) FormPartnershipParticipant(ctx context.Context, req dom
 	return
 }
 
-func (h *TourneyUsecase) UpdateParticipant(ctx context.Context, req domain.UpdateParticipantRequest) (status int, err error) {
+func (h *TourneyUsecase) UpdateParticipant(ctx context.Context, req domain.UpdateParticipantStatusRequest) (status int, err error) {
 	slog.Info("[Usecase][UpdateParticipant] UpdateParticipant")
 	//checkID
 	paramUpdate := make(map[string]string)
